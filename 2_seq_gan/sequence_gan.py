@@ -43,8 +43,8 @@ sample_num = 10
 # generated_num = 10000
 
 positive_file = '../data/data_index.txt'
-negative_file = '..save/negative_sample.txt'
-eval_file = '..save/eval_file.txt'
+negative_file = '../save/negative_sample.txt'
+eval_file = '../save/eval_file.txt'
 # "pretrain" or "poke"
 embed_flag = "pretrain"
 
