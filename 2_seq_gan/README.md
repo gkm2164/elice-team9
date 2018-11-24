@@ -12,6 +12,7 @@
     2. preprocess_util.py
     3. preprocess_data.py
     4. sequence_gan.py
+    5. sequence_gan_load_test.py (for test with start token)
     
 ## Reference
 - Pretrained word2vec : https://github.com/Kyubyong/wordvectors
