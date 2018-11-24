@@ -15,8 +15,7 @@ EMB_DIM = 200 # embedding dimension (pretrained: 200, pk: 30)
 HIDDEN_DIM = 300 # hidden state dimension of lstm cell
 SEQ_LENGTH = 30 # sequence length
 START_TOKEN = 0
-#PRE_EPOCH_NUM = 120  # supervise (maximum likelihood estimation) epochs
-PRE_EPOCH_NUM = 1  # supervise (maximum likelihood estimation) epochs
+PRE_EPOCH_NUM = 120  # supervise (maximum likelihood estimation) epochs
 SEED = 88
 BATCH_SIZE = 64
 
@@ -43,24 +42,24 @@ sample_num = 10
 # TOTAL_BATCH = 200
 # generated_num = 10000
 
-positive_file = '../data/data_index.txt'
-negative_file = '../save/negative_sample.txt'
-eval_file = '../save/eval_file.txt'
+positive_file = './drive/elice-team9/data/data_index.txt'
+negative_file = './drive/elice-team9/save/negative_sample.txt'
+eval_file = './drive/elice-team9/save/eval_file.txt'
 # "pretrain" or "poke"
 embed_flag = "pretrain"
 
-a = open('../data/data_index.pkl', 'rb')
+a = open('./drive/elice-team9/data/data_index.pkl', 'rb')
 real_data = pickle.load(a)
 
-a = open('../data/pos2idx.pkl', 'rb')
+a = open('./drive/elice-team9/data/pos2idx.pkl', 'rb')
 vocab_to_int = pickle.load(a)
 
-a = open('../data/idx2pos.pkl', 'rb')
+a = open('./drive/elice-team9/data/idx2pos.pkl', 'rb')
 int_to_vocab = pickle.load(a)
 print(int_to_vocab)
 
 if embed_flag == "pretrain":
-    a = open('../data/pretrain_embedding_vec.pkl', 'rb')
+    a = open('./drive/elice-team9/data/pretrain_embedding_vec.pkl', 'rb')
 # elif embed_flag == "poke":
 #     a = open('../data/embedding_vec.pkl', 'rb')
 word_embedding_matrix = pickle.load(a)
@@ -144,7 +143,7 @@ sess.run(tf.global_variables_initializer())
 # First, use the oracle model to provide the positive examples, which are sampled from the oracle data distribution
 #  pre-train generator
 gen_data_loader.create_batches(positive_file)
-gen_sample = open('../save/pretrain_sample.txt', 'w')
+gen_sample = open('./drive/elice-team9/save/pretrain_sample.txt', 'w')
 print('Start pre-training...')
 gen_sample.write('pre-training...\n')
 for epoch in range(PRE_EPOCH_NUM):
@@ -165,8 +164,7 @@ for epoch in range(PRE_EPOCH_NUM):
 #  pre-train discriminator
 print('Start pre-training discriminator...')
 # Train 3 epoch on the generated data and do this for 50 times
-#for _ in range(25):
-for _ in range(5):
+for _ in range(25):
     generate_samples(sess, generator, BATCH_SIZE, generated_num, negative_file, word_embedding_matrix)
     dis_data_loader.load_train_data(positive_file, negative_file)
     for _ in range(3):
@@ -188,10 +186,7 @@ gen_sample.write('adversarial training...\n')
 for total_batch in range(TOTAL_BATCH):
     # Train the generator for one step
     for it in range(1):
-        print('Start Samples...')
         samples = generator.generate(sess, word_embedding_matrix)
-        print(samples)
-        print('Start Rewards...')
         rewards = rollout.get_reward(sess, samples, 16, discriminator)
         print('Start Run...')
         start_token_input = np.array([START_TOKEN] * BATCH_SIZE, dtype=np.int32)
@@ -232,7 +227,7 @@ for total_batch in range(TOTAL_BATCH):
                 _ = sess.run(discriminator.train_op, feed)
 
     if total_batch % 5 == 0 or total_batch == TOTAL_BATCH - 1:
-        saver.save(sess, '../checkpoint/seqGAN_ours')
+        saver.save(sess, './drive/elice-team9/checkpoint/seqGAN_ours')
 
 gen_sample.close()
 
@@ -247,14 +242,14 @@ samples = make_sample(eval_file, int_to_vocab, generated_num)
 samples = [[word for word in sample.split() if word != 'UNK'] for sample in samples]
 samples = [' '.join(sample) for sample in samples]
 
-f = open('../save/final_output_vocab.txt', 'w')
+f = open('./drive/elice-team9/save/final_output_vocab.txt', 'w')
 for token in samples:
     token = token + '\n'
     f.write(token)
 f.close()
 
 # write the training time
-f = open('../save/_parameters.txt', 'w')
+f = open('./drive/elice-team9/save/_parameters.txt', 'w')
 f.write("Training time : {}\n".format(time_check))
 f.write("add <start> signal as zero in word2vec lookup table\n")
 f.close()

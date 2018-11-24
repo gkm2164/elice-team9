@@ -13,6 +13,7 @@ class Generator(object):
         self.hidden_dim = hidden_dim
         self.sequence_length = sequence_length
         self.start_token_input = np.array([start_token] * self.batch_size, dtype=np.int32)
+        #self.start_token = tf.constant([start_token] * self.batch_size, dtype=tf.int32)
         self.word_embedding_matrix = tf.placeholder(dtype=tf.float32, shape=[num_emb, emb_dim], name='word_embed')
         self.learning_rate = tf.Variable(float(learning_rate), trainable=False)
         self.reward_gamma = reward_gamma
@@ -121,9 +122,9 @@ class Generator(object):
         self.g_updates = g_opt.apply_gradients(zip(self.g_grad, self.g_params))
 
     def generate(self, sess, word_embedding_matrix):
-        outputs = sess.run(self.gen_x, feed_dict={self.word_embedding_matrix: word_embedding_matrix,
+        outputs, start_nums = sess.run([self.gen_x, self.start_token], feed_dict={self.word_embedding_matrix: word_embedding_matrix,
                                                   self.start_token: self.start_token_input})
-        return outputs
+        return outputs, start_nums
 
     def pretrain_step(self, sess, x, word_embedding_matrix):
         outputs = sess.run([self.pretrain_updates, self.pretrain_loss],

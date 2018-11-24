@@ -10,10 +10,10 @@ import pickle
 #########################################################################################
 #  Generator  Hyper-parameters
 ######################################################################################
-EMB_DIM = 30 # embedding dimension (pretrained: 200, pk: 30)
+EMB_DIM = 200 # embedding dimension (pretrained: 200, pk: 30)
 HIDDEN_DIM = 300 # hidden state dimension of lstm cell
 SEQ_LENGTH = 30 # sequence length
-START_TOKEN = 0
+START_TOKEN = 2870
 PRE_EPOCH_NUM = 120  # supervise (maximum likelihood estimation) epochs
 SEED = 88
 BATCH_SIZE = 64
@@ -41,25 +41,27 @@ sample_num = 10
 # TOTAL_BATCH = 200
 # generated_num = 10000
 
-positive_file = './data/3_pk_data_index.txt'
-negative_file = 'save/negative_sample.txt'
-eval_file = 'save/eval_file.txt'
+positive_file = '../data/data_index.txt'
+negative_file = '../save/negative_sample.txt'
+eval_file = '../save/eval_file.txt'
 # "pretrain" or "poke"
-embed_flag = "poke"
+embed_flag = "pretrain"
 
-a = open('./data/3_pk_data_index.pkl', 'rb')
+a = open('../data/data_index.pkl', 'rb')
 real_data = pickle.load(a)
 
-a = open('./data/pk_pos2idx.pkl', 'rb')
+a = open('../data/pos2idx.pkl', 'rb')
 vocab_to_int = pickle.load(a)
-
-a = open('./data/pk_idx2pos.pkl', 'rb')
+#print(vocab_to_int)
+a = open('../data/idx2pos.pkl', 'rb')
 int_to_vocab = pickle.load(a)
+#print(int_to_vocab)
+print('start_vocab : ',int_to_vocab[START_TOKEN])
 
 if embed_flag == "pretrain":
-    a = open('./data/pretrain_embedding_vec.pkl', 'rb')
-elif embed_flag == "poke":
-    a = open('./data/pk_embedding_vec.pkl', 'rb')
+    a = open('../data/pretrain_embedding_vec.pkl', 'rb')
+# elif embed_flag == "poke":
+#     a = open('../data/embedding_vec.pkl', 'rb')
 word_embedding_matrix = pickle.load(a)
 word_embedding_matrix = word_embedding_matrix.astype(np.float32)
 
@@ -75,9 +77,11 @@ def generate_samples(sess, trainable_model, batch_size, generated_num, output_fi
     # Generate Samples
     generated_samples = []
     for _ in range(int(generated_num / batch_size)):
-        generated_samples.extend(trainable_model.generate(sess, word_embedding_matrix))
+        output_samples, start_num = trainable_model.generate(sess, word_embedding_matrix)
+        #print('start_token:', start_num)
+        generated_samples.extend(output_samples)
 
-    with open(output_file, 'w') as fout:
+    with open(output_file, 'a') as fout:
         for poem in generated_samples:
             buffer = ' '.join([str(x) for x in poem]) + '\n'
             fout.write(buffer)
@@ -114,7 +118,7 @@ def make_sample(eval_file, int_to_vocab, sample_num):
 ################################## main() #########################################
 
 # load model path (./chekckpoint)
-load_model_path = './checkpoint/test5_pkembed/seqGAN_ours'
+load_model_path = '../checkpoint/seqGAN_ours'
 
 tf.reset_default_graph()
 
@@ -152,7 +156,7 @@ samples = make_sample(eval_file, int_to_vocab, generated_num)
 samples = [[word for word in sample.split() if word != 'UNK'] for sample in samples]
 samples = [' '.join(sample) for sample in samples]
 
-f = open('./save/eval_seqgan_vocab.txt', 'w')
+f = open('../save/eval_seqgan_vocab.txt', 'a', encoding='utf-8')
 for token in samples:
     token = token + '\n'
     f.write(token)
